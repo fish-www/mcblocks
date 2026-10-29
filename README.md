@@ -1,17 +1,14 @@
 # mcblocks
 
-A new Flutter project.
+Minecraft 方块的本地标注工具：导入 `.mcblocks` 数据包，给方块打标签、设色值、管理
+贴图，再导出成同样格式的包。
 
-## Getting Started
+```bash
+fvm flutter run -d linux
+```
 
-This project is a starting point for a Flutter application.
+- 数据包由 `mc-blocks`（Python 工具）从客户端 jar 或 mod 源码提取产生
+- 桌面优先，同时支持移动端
+- 包格式见 `docs/package-format.md`
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+技术栈、目录结构和开发约定见 `AGENTS.md`，分层和数据流见 `docs/architecture.md`。

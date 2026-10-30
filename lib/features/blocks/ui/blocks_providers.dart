@@ -85,6 +85,37 @@ class BlockFilterController extends _$BlockFilterController {
 
   void clear() => state = const BlockFilter(limit: pageSize);
 
+  /// 词表改名或删除之后，把筛选里已经不存在的 `分类:标签` 摘掉，
+  /// 否则列表会安静地变成空的。
+  Future<void> dropStaleTags() async {
+    final categories = await ref.read(blocksRepositoryProvider).categories();
+    final full = <String>{};
+    final bare = <String>{};
+    final alive = <String>{};
+    for (final category in categories) {
+      alive.add(category.code);
+      for (final tag in category.tags) {
+        full.add('${category.code}:${tag.code}');
+        bare.add(tag.code);
+      }
+    }
+
+    final tags = [
+      for (final tag in state.tags)
+        if (full.contains(tag) || bare.contains(tag)) tag,
+    ];
+    final range = state.range;
+    final clearRange = range != null && !alive.contains(range.category);
+
+    if (tags.length == state.tags.length && !clearRange) return;
+    state = state.copyWith(
+      tags: tags,
+      clearRange: clearRange,
+      limit: pageSize,
+      offset: 0,
+    );
+  }
+
   /// 从详情页点标签跳过来：只按这个标签筛，其它条件清掉。
   void applyTag(String ref) =>
       state = BlockFilter(limit: pageSize, tags: [ref]);

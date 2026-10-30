@@ -17,6 +17,7 @@ void main() {
   final now = DateTime.utc(2026, 10, 29);
 
   late int colorCategory;
+  late int shapeCategory;
   late int vanityCategory;
 
   setUp(() async {
@@ -37,7 +38,7 @@ void main() {
             updatedAt: now,
           ),
         );
-    final shape = await db
+    shapeCategory = await db
         .into(db.categories)
         .insert(
           CategoriesCompanion.insert(
@@ -76,7 +77,7 @@ void main() {
 
     final grey = await tag(colorCategory, '灰', sort: 1);
     await tag(colorCategory, '白', sort: 2);
-    final cube = await tag(shape, '立方');
+    final cube = await tag(shapeCategory, '立方');
     final pickaxe = await tag(vanityCategory, 'mineable/pickaxe');
     await tag(vanityCategory, 'logs');
 
@@ -163,19 +164,47 @@ ORDER BY c.code, t.code
     expect(await tagRefs(), ['vanilla:mineable/pickaxe(vanilla)']);
   });
 
-  test('原版标签不能手工删除，且不影响其他修改', () async {
-    await expectLater(
-      writer.apply(
-        const BlockPatch(
-          code: 'stone',
-          reviewed: Value(true),
-          removeTags: ['vanilla:mineable/pickaxe'],
-        ),
-      ),
-      throwsA(isA<PatchException>()),
+  test('原版标签也能手工删除', () async {
+    await writer.apply(
+      const BlockPatch(code: 'stone', removeTags: ['vanilla:mineable/pickaxe']),
     );
-    expect((await stone()).reviewed, isFalse);
-    expect(await tagRefs(), contains('vanilla:mineable/pickaxe(vanilla)'));
+    expect(
+      await tagRefs(),
+      isNot(contains('vanilla:mineable/pickaxe(vanilla)')),
+    );
+  });
+
+  test('单选分类里的原版值也能被替换', () async {
+    final ball = await db
+        .into(db.tags)
+        .insert(
+          TagsCompanion.insert(
+            categoryId: shapeCategory,
+            code: '球',
+            name: '球',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    await db
+        .into(db.blockTags)
+        .insert(
+          BlockTagsCompanion.insert(
+            blockId: (await stone()).id,
+            tagId: ball,
+            source: const Value('vanilla'),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+    await writer.apply(
+      const BlockPatch(code: 'stone', addTags: [PatchTag('形状:立方')]),
+    );
+
+    final refs = await tagRefs();
+    expect(refs, contains('形状:立方(user)'));
+    expect(refs, isNot(contains('形状:球(vanilla)')));
   });
 
   test('未知标签让整次修改回滚', () async {

@@ -10,7 +10,6 @@ import '../../../core/db/app_database.dart' hide BlockTag;
 import '../../../core/db/connection.dart';
 import '../../../core/db/database_provider.dart';
 import '../domain/patch.dart';
-import '../domain/tag_source.dart';
 
 part 'block_writer.g.dart';
 
@@ -21,8 +20,8 @@ BlockWriter blockWriter(Ref ref) => BlockWriter(ref.watch(appDatabaseProvider));
 ///
 /// 校验规则：
 /// - 标签必须存在，`分类:标签` 或裸标签都行
-/// - 单选分类（`single=1`）加新值会替换旧值
-/// - 原版标签不允许手工删除
+/// - 单选分类（`single=1`）加新值会替换旧值，原版值也一并换掉
+/// - 原版标签和普通标签一样可以增删
 /// - 写入的标签来源固定为 `user`，优先级高于 `auto` / `vanilla`
 class BlockWriter {
   BlockWriter(this._db, {Future<Directory> Function()? texturesDirectory})
@@ -425,16 +424,10 @@ class BlockWriter {
         );
   }
 
-  /// 单选分类只留一个值；原版值不动，直接报错让人判断。
+  /// 单选分类只留一个值。原版标签也能换，人工改的就以人工为准。
   Future<void> _clearSingleCategory(int blockId, String category) async {
     final rows = await _linksInCategory(blockId, category);
     for (final row in rows) {
-      if (TagSource.parse(row.source) == TagSource.vanilla) {
-        throw PatchException(
-          '分类「$category」已有原版标签 ${row.tagCode}',
-          '原版标签不能替换，先确认它是否该保留',
-        );
-      }
       await (_db.delete(_db.blockTags)..where(
             (t) => t.blockId.equals(blockId) & t.tagId.equals(row.tagId),
           ))
@@ -455,13 +448,6 @@ class BlockWriter {
     final rows = await _linksInCategory(blockId, entry.category);
     final link = rows.where((row) => row.tagId == entry.id).firstOrNull;
     if (link == null) return;
-
-    if (TagSource.parse(link.source) == TagSource.vanilla) {
-      throw PatchException(
-        '原版标签 ${entry.name} 不能删除',
-        '原版标签由导入维护，重跑导入会再加回来',
-      );
-    }
 
     await (_db.delete(_db.blockTags)..where(
           (t) => t.blockId.equals(blockId) & t.tagId.equals(entry.id),

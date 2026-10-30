@@ -87,34 +87,36 @@ class _Body extends ConsumerWidget {
                       contentPadding: EdgeInsets.zero,
                       title: Text(tag.label),
                       subtitle: Text(tag.ref, style: theme.textTheme.labelSmall),
-                      trailing: tag.isVanilla
-                          ? Tooltip(
-                              message: '原版标签由导入维护，不能删除',
-                              child: Chip(
-                                label: Text(
-                                  '原版',
-                                  style: theme.textTheme.labelSmall,
-                                ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (tag.isVanilla)
+                            Chip(
+                              label: Text(
+                                '原版',
+                                style: theme.textTheme.labelSmall,
                               ),
-                            )
-                          : IconButton(
-                              tooltip: '删除',
-                              iconSize: 18,
-                              onPressed: () => _write(
-                                context,
-                                ref,
-                                () => ref
-                                    .read(blockWriterProvider)
-                                    .apply(
-                                      BlockPatch(
-                                        code: detail.code,
-                                        removeTags: [tag.ref],
-                                      ),
-                                    ),
-                                '已移除 ${tag.label}',
-                              ),
-                              icon: const Icon(Icons.delete_outline),
                             ),
+                          IconButton(
+                            tooltip: '删除',
+                            iconSize: 18,
+                            onPressed: () => _write(
+                              context,
+                              ref,
+                              () => ref
+                                  .read(blockWriterProvider)
+                                  .apply(
+                                    BlockPatch(
+                                      code: detail.code,
+                                      removeTags: [tag.ref],
+                                    ),
+                                  ),
+                              '已移除 ${tag.label}',
+                            ),
+                            icon: const Icon(Icons.delete_outline),
+                          ),
+                        ],
+                      ),
                     ),
                 ],
               ),

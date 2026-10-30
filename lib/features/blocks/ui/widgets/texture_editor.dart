@@ -66,11 +66,14 @@ class _Body extends ConsumerWidget {
       children: [
         Row(
           children: [
-            Text(
-              '贴图 · ${detail.code}',
-              style: theme.textTheme.titleMedium,
+            Expanded(
+              child: Text(
+                '贴图 · ${detail.code}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium,
+              ),
             ),
-            const Spacer(),
             TextButton.icon(
               onPressed: () => _add(context, ref),
               icon: const Icon(Icons.add_photo_alternate_outlined, size: 16),

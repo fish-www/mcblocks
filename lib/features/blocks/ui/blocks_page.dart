@@ -516,7 +516,13 @@ class _BlockTile extends StatelessWidget {
       leading: BlockThumbnail(hash: block.iconHash),
       title: Row(
         children: [
-          Flexible(child: Text(block.displayName)),
+          Flexible(
+            child: Text(
+              block.displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           if (block.variantCount > 0) ...[
             const SizedBox(width: 8),
             Tooltip(

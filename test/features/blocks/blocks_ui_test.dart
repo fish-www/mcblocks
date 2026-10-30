@@ -212,6 +212,40 @@ void main() {
     expect(copied, contains('stone'));
   });
 
+  testWidgets('code 过长时添加标签按钮仍可见', (tester) async {
+    const longCode = 'create:waxed_exposed_copper_shingles_block';
+    await db
+        .into(db.blocks)
+        .insert(
+          BlocksCompanion.insert(
+            code: longCode,
+            nameZh: const Value('打蜡铜'),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+    await tester.pumpWidget(
+      _wrap(db, const BlockDetailPanel(code: longCode)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('更多'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('管理标签'));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), null);
+    final button = find.text('添加标签');
+    expect(button, findsOneWidget);
+    expect(
+      tester.getRect(button).right,
+      lessThanOrEqualTo(
+        tester.view.physicalSize.width / tester.view.devicePixelRatio,
+      ),
+    );
+  });
+
   testWidgets('缩略图尺寸固定 40×40', (tester) async {
     await tester.pumpWidget(
       _wrap(

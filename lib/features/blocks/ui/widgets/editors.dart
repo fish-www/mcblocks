@@ -62,8 +62,14 @@ class _Body extends ConsumerWidget {
       children: [
         Row(
           children: [
-            Text('标签 · ${detail.code}', style: theme.textTheme.titleMedium),
-            const Spacer(),
+            Expanded(
+              child: Text(
+                '标签 · ${detail.code}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium,
+              ),
+            ),
             TextButton.icon(
               onPressed: () => _addTag(context, ref),
               icon: const Icon(Icons.add, size: 16),
@@ -85,8 +91,17 @@ class _Body extends ConsumerWidget {
                     ListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      title: Text(tag.label),
-                      subtitle: Text(tag.ref, style: theme.textTheme.labelSmall),
+                      title: Text(
+                        tag.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        tag.ref,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall,
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -207,10 +222,18 @@ class _AddTagDialogState extends State<_AddTagDialog> {
           children: [
             DropdownButtonFormField<CategoryWithTags>(
               initialValue: category,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: '分类'),
               items: [
                 for (final item in widget.categories)
-                  DropdownMenuItem(value: item, child: Text(item.name)),
+                  DropdownMenuItem(
+                    value: item,
+                    child: Text(
+                      item.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
               ],
               onChanged: (value) => setState(() {
                 _category = value;
@@ -220,11 +243,19 @@ class _AddTagDialogState extends State<_AddTagDialog> {
             const SizedBox(height: 12),
             DropdownButtonFormField<TagOption>(
               initialValue: _tag,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: '标签'),
               items: [
                 for (final tag in candidates)
                   if (!widget.existing.contains(tag.refIn(category!.code)))
-                    DropdownMenuItem(value: tag, child: Text(tag.name)),
+                    DropdownMenuItem(
+                      value: tag,
+                      child: Text(
+                        tag.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
               ],
               onChanged: (value) => setState(() => _tag = value),
             ),
@@ -459,6 +490,8 @@ class _InfoFormState extends ConsumerState<_InfoForm> {
       children: [
         Text(
           '编辑方块 · ${detail.code}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),
@@ -490,13 +523,18 @@ class _InfoFormState extends ConsumerState<_InfoForm> {
         const SizedBox(height: 12),
         DropdownButtonFormField<String?>(
           initialValue: _iconKey,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: '图标使用的贴图'),
           items: [
             const DropdownMenuItem<String?>(value: null, child: Text('不用图标')),
             for (final entry in detail.textures)
               DropdownMenuItem<String?>(
                 value: entry.key,
-                child: Text(entry.key),
+                child: Text(
+                  entry.key,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
           ],
           onChanged: (value) => setState(() => _iconKey = value),

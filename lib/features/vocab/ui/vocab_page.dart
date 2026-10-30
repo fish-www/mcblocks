@@ -133,12 +133,22 @@ class _CategoryTile extends ConsumerWidget {
             ),
       title: Row(
         children: [
-          Text(category.name),
+          Flexible(
+            child: Text(
+              category.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           const SizedBox(width: 8),
-          Text(
-            '${category.code} · ${category.tags.length} 个标签 · '
-            'sort ${category.sort}',
-            style: theme.textTheme.labelSmall,
+          Flexible(
+            child: Text(
+              '${category.code} · ${category.tags.length} 个标签 · '
+              'sort ${category.sort}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall,
+            ),
           ),
           if (category.single) ...[
             const SizedBox(width: 8),

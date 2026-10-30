@@ -62,6 +62,8 @@ class _DetailBody extends ConsumerWidget {
                   onTap: () => _copy(context, detail.displayName, '名称'),
                   child: Text(
                     detail.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleLarge,
                   ),
                 ),
@@ -135,7 +137,14 @@ class _DetailBody extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(detail.code, style: theme.textTheme.bodySmall),
+                Flexible(
+                  child: Text(
+                    detail.code,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
                 const SizedBox(width: 4),
                 Icon(
                   Icons.copy,

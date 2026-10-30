@@ -5,6 +5,7 @@ final class CategoryWithTags {
     required this.name,
     required this.single,
     required this.ordered,
+    required this.sort,
     required this.tags,
   });
 
@@ -12,6 +13,9 @@ final class CategoryWithTags {
   final String name;
   final bool single;
   final bool ordered;
+
+  /// 列表和导出用的顺序，小的在前。
+  final int sort;
   final List<TagOption> tags;
 
   bool get isVanilla => code == 'vanilla';

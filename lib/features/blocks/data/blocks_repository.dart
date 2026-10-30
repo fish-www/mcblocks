@@ -132,9 +132,11 @@ WHERE b.code = ?
     );
   }
 
-  /// 词表按分类分组，顺序按 `sort`。
+  /// 词表按分类分组，顺序按 `sort`；`vanilla` 固定在最后。
   Future<List<CategoryWithTags>> categories() async {
     final categoryRows = await (_db.select(_db.categories)..orderBy([
+          // SQLite 里 false < true，`vanilla` 因此永远排最后。
+          (t) => OrderingTerm(expression: t.code.equals('vanilla')),
           (t) => OrderingTerm(expression: t.sort),
           (t) => OrderingTerm(expression: t.code),
         ]))
@@ -159,9 +161,47 @@ WHERE b.code = ?
           name: category.name,
           single: category.single,
           ordered: category.ordered,
+          sort: category.sort,
           tags: grouped[category.id] ?? const [],
         ),
     ];
+  }
+
+  /// 某个标签被多少个方块用着。删之前给用户看影响面。
+  Future<int> tagUsage(String categoryCode, String tagCode) async {
+    final row = await _db
+        .customSelect(
+          '''
+SELECT COUNT(*) AS total
+FROM block_tag bt
+JOIN tag t ON t.id = bt.tag_id
+JOIN category c ON c.id = t.category_id
+WHERE c.code = ? AND t.code = ?
+''',
+          variables: [
+            Variable.withString(categoryCode),
+            Variable.withString(tagCode),
+          ],
+        )
+        .getSingle();
+    return row.read<int>('total');
+  }
+
+  /// 某个分类的标签一共盖到多少个方块（去重）。
+  Future<int> categoryUsage(String categoryCode) async {
+    final row = await _db
+        .customSelect(
+          '''
+SELECT COUNT(DISTINCT bt.block_id) AS total
+FROM block_tag bt
+JOIN tag t ON t.id = bt.tag_id
+JOIN category c ON c.id = t.category_id
+WHERE c.code = ?
+''',
+          variables: [Variable.withString(categoryCode)],
+        )
+        .getSingle();
+    return row.read<int>('total');
   }
 
   Future<List<BlockTextureEntry>> _texturesFor(int blockId) async {
@@ -335,8 +375,10 @@ ORDER BY c.sort, c.code, t.sort, t.code
   /// drift 默认把 DateTime 存成 Unix 秒。
   DateTime? _time(int? seconds) => seconds == null
       ? null
-      : DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true)
-            .toLocal();
+      : DateTime.fromMillisecondsSinceEpoch(
+          seconds * 1000,
+          isUtc: true,
+        ).toLocal();
 }
 
 final class _Match {

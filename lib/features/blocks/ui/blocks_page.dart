@@ -82,37 +82,53 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
             child: const SingleChildScrollView(child: FilterPanel()),
           ),
         const Divider(height: 1),
-        if (page.isLoading && shown != null)
-          const LinearProgressIndicator(minHeight: 2),
+        // 点面板以外的任何地方、或者拖动列表，都当作「看完了」，自动收起。
         Expanded(
-          child: shown == null
-              ? (page.hasError && !page.isLoading
-                    ? Center(child: Text('读取失败：${page.error}'))
-                    : const Center(child: CircularProgressIndicator()))
-              : shown.items.isEmpty
-              ? _EmptyState(hasFilter: hasFilter)
-              : wide
-              ? Row(
-                  children: [
-                    Expanded(child: _list(shown, wide)),
-                    const VerticalDivider(width: 1),
-                    SizedBox(
-                      width: 380,
-                      child: selected == null
-                          ? const Center(child: Text('选一个方块看详情'))
-                          : BlockDetailPanel(
-                              code: selected,
-                              onSelect: (code) => ref
-                                  .read(selectedBlockProvider.notifier)
-                                  .select(code),
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (_) => _closeFilter(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (page.isLoading && shown != null)
+                  const LinearProgressIndicator(minHeight: 2),
+                Expanded(
+                  child: shown == null
+                      ? (page.hasError && !page.isLoading
+                            ? Center(child: Text('读取失败：${page.error}'))
+                            : const Center(child: CircularProgressIndicator()))
+                      : shown.items.isEmpty
+                      ? _EmptyState(hasFilter: hasFilter)
+                      : wide
+                      ? Row(
+                          children: [
+                            Expanded(child: _list(shown, wide)),
+                            const VerticalDivider(width: 1),
+                            SizedBox(
+                              width: 380,
+                              child: selected == null
+                                  ? const Center(child: Text('选一个方块看详情'))
+                                  : BlockDetailPanel(
+                                      code: selected,
+                                      onSelect: (code) => ref
+                                          .read(selectedBlockProvider.notifier)
+                                          .select(code),
+                                    ),
                             ),
-                    ),
-                  ],
-                )
-              : _list(shown, wide),
+                          ],
+                        )
+                      : _list(shown, wide),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
+  }
+
+  void _closeFilter() {
+    if (_filterOpen) setState(() => _filterOpen = false);
   }
 
   Future<void> _createBlock() async {

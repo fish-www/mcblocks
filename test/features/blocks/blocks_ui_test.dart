@@ -115,6 +115,32 @@ void main() {
     expect(find.text('筛选 1'), findsOneWidget);
   });
 
+  testWidgets('点列表或拖动列表时筛选面板自动收起', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(_wrap(db, const BlocksPage()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilterChip, '筛选'));
+    await tester.pumpAndSettle();
+    expect(find.text('清除筛选'), findsOneWidget);
+
+    // 点列表区域（这里点列表上方的计数文本）：面板收起。
+    await tester.tap(find.text('共 2 个方块'));
+    await tester.pumpAndSettle();
+    expect(find.text('清除筛选'), findsNothing);
+
+    await tester.tap(find.widgetWithText(FilterChip, '筛选'));
+    await tester.pumpAndSettle();
+    expect(find.text('清除筛选'), findsOneWidget);
+
+    // 拖动列表（哪怕内容不够长）也算离开面板。
+    await tester.drag(find.byType(ListView).first, const Offset(0, -80));
+    await tester.pumpAndSettle();
+    expect(find.text('清除筛选'), findsNothing);
+  });
+
   testWidgets('同一模式下多选走交集，切到任一走并集', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1200, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));

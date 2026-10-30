@@ -57,31 +57,35 @@ class AppShell extends StatelessWidget {
 
     if (wide) {
       return Scaffold(
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: _index,
-              onDestinationSelected: (index) =>
-                  context.go(_destinations[index].path),
-              labelType: NavigationRailLabelType.all,
-              destinations: [
-                for (final destination in _destinations)
-                  NavigationRailDestination(
-                    icon: Icon(destination.icon),
-                    selectedIcon: Icon(destination.selected),
-                    label: Text(destination.label),
-                  ),
-              ],
-            ),
-            const VerticalDivider(width: 1),
-            Expanded(child: child),
-          ],
+        // 状态栏 / 灵动岛不压住侧边栏和内容。桌面上 padding 为 0，等价于不包。
+        body: SafeArea(
+          child: Row(
+            children: [
+              NavigationRail(
+                selectedIndex: _index,
+                onDestinationSelected: (index) =>
+                    context.go(_destinations[index].path),
+                labelType: NavigationRailLabelType.all,
+                destinations: [
+                  for (final destination in _destinations)
+                    NavigationRailDestination(
+                      icon: Icon(destination.icon),
+                      selectedIcon: Icon(destination.selected),
+                      label: Text(destination.label),
+                    ),
+                ],
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: child),
+            ],
+          ),
         ),
       );
     }
 
     return Scaffold(
-      body: child,
+      // 底部交给 NavigationBar 自己躲手势条。
+      body: SafeArea(bottom: false, child: child),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (index) => context.go(_destinations[index].path),
